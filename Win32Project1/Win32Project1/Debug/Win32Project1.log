@@ -1,0 +1,5 @@
+﻿  main.cpp
+c:\users\tti13shenrit\desktop\window\win32project1\win32project1\main.cpp(115): warning C4244: 'argument' : conversion from 'GLfloat' to 'GLint', possible loss of data
+c:\users\tti13shenrit\desktop\window\win32project1\win32project1\main.cpp(272): warning C4244: 'initializing' : conversion from 'GLint' to 'GLfloat', possible loss of data
+c:\users\tti13shenrit\desktop\window\win32project1\win32project1\main.cpp(182): warning C4715: 'WndProc' : not all control paths return a value
+  Win32Project1.vcxproj -> C:\Users\tti13shenrit\Desktop\window\Win32Project1\Debug\Win32Project1.exe

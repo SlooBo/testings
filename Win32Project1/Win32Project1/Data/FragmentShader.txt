@@ -1,0 +1,38 @@
+uniform float time;
+uniform vec3 lightPos;
+uniform vec2 Resolution;
+uniform vec4 lightColor;
+uniform vec4 ambientColor;
+uniform vec3 fallOff;
+
+uniform sampler2D tex;
+
+varying vec4 Color;
+varying vec2 Position;
+varying vec2 Texcoord;
+
+void main()
+{
+	vec4 diffuseColor = texture2D(tex, texCoord);
+	vec3 lightDir = vec3(lightPos.xy - (gl_FragCoord.xy / Resolution.xy), lightPos.z);
+
+	lightDir.x *= Resolution.x / Resolution.y;
+
+	float D = length(lightDir);
+
+	vec3 N = normalize(lightDir);
+	vec3 L = normalize(lightDir);
+
+	vec3 diffuse = (lightColor.rgb * lightColor.a) * max(dot(N,L),0.0);
+	vec3 ambient = ambientColor.rgb * ambientColor.a;
+
+	float attenuation = 1.0 / (fallOff.x + (fallOff.y*D) + (fallOff.x*D*D));
+
+	vec3 intensity = ambient + diffuse * attenuation;
+	vec3 finalColor = diffuseColor.rgb * intensity;
+
+	gl_FragColor = Color * vec4(finalColor, diffuseColor.a);
+
+	//gl_FragColor = texture(tex, Texcoord) * vec4(Color);
+	//gl_FragColor.a = 1.0;
+}
