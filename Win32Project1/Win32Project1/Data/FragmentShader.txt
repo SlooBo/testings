@@ -8,11 +8,12 @@ uniform vec3 fallOff;
 uniform sampler2D tex;
 
 varying vec4 Color;
-varying vec2 Position;
-varying vec2 Texcoord;
+varying vec3 Position;
+varying vec3 Texcoord;
 
 void main()
 {
+/*
 	vec4 diffuseColor = texture2D(tex, texCoord);
 	vec3 lightDir = vec3(lightPos.xy - (gl_FragCoord.xy / Resolution.xy), lightPos.z);
 
@@ -32,7 +33,7 @@ void main()
 	vec3 finalColor = diffuseColor.rgb * intensity;
 
 	gl_FragColor = Color * vec4(finalColor, diffuseColor.a);
-
-	//gl_FragColor = texture(tex, Texcoord) * vec4(Color);
-	//gl_FragColor.a = 1.0;
+*/
+	gl_FragColor = texture(tex, Texcoord) * vec4(Color);
+	gl_FragColor.a = 1.0;
 }

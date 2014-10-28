@@ -91,20 +91,29 @@ GLuint loadShaders(const char* vsPath, const char* fsPath)
 	return programId;
 }
 
+
 //vertex array
 GLfloat vertices[] =
 {
-//  Position(2) Color(3)    Coordinates(2)
-	800.0f, 800.0f, 1.0f, 0, 0, 1.0f, 1.0f,
-	0.0f, 800.0f, 0, 0, 1.0f, 0.0f, 1.0f,
-	800.0f, 0.0f, 0, 1.0f, 0, 1.0f, 0.0f,
-	0.0f, 0.0f, 1.0f, 0, 0, 0.0f, 0.0f
+//  Position(3)				 Color(3)			 Coordinates(3)
+	-0.5f,-0.5f,-0.5f,		 1.0f, 0.0f, 0.0f,	 0.0f, 0.0f, 0.0f,
+	-0.5f, 0.5f, -0.5f,		 1.0f, 0.0f, 0.0f,	 0.0f, -1.0f, 0.0f,
+	0.5f, 0.5f, -0.5f,		 1.0f, 0.0f, 0.0f,	 -1.0f, -1.0f, 0.0f,
+	0.5f, -0.5f, -0.5f,		 1.0f, 0.0f, 0.0f,	 -1.0f, 0.0f, 0.0f,
+	-0.5f, -0.5f, 0.5f,		 1.0f, 0.0f, 0.0f,	 0.0f, 0.0f, -1.0f,
+	-0.5f, 0.5f, 0.5f,		 1.0f, 0.0f, 0.0f,	 0.0f, -1.0f, -1.0f,
+	0.5f, 0.5f, 0.5f,		 1.0f, 0.0f, 0.0f,	 -1.0f, -1.0f, -1.0f,
+	0.5f, -0.5f, 0.5f,		 1.0f, 0.0f, 0.0f,	 -1.0f, 0.0f, -1.0f
 };
 
 GLuint indices[] =
 {
-	0, 1, 2,
-	1, 2, 3
+	4, 5, 1, 0,
+	5, 6, 2, 1,
+	6, 7, 3, 2,
+	7, 4, 0, 3,
+	0, 1, 2, 3,
+	7, 6, 5, 4
 };
 
 //DRAW
@@ -114,7 +123,7 @@ void renderFrame(GLfloat asd, float time)
 
 	glUniform1f(asd, time);
 	
-	glDrawElements(GL_TRIANGLES, 6, GL_UNSIGNED_INT, 0);
+	glDrawElements(GL_QUADS, 32, GL_UNSIGNED_INT, 0);
 }
 
 //VBO creation
@@ -255,26 +264,29 @@ int main()
 
 	GLuint posAttrib = glGetAttribLocation(programId, "position");   //"position" talteen, "käyttäjä" määrittää
 	glEnableVertexAttribArray(posAttrib);
-	glVertexAttribPointer(posAttrib, 2, GL_FLOAT, GL_FALSE, 7 * sizeof(float), 0);
+	glVertexAttribPointer(posAttrib, 3, GL_FLOAT, GL_FALSE, 9 * sizeof(float), 0);
 	//size tarviiiiiii, (FLOAT TULEVAISUUDESSA WRÄPÄTÄÄN), stride TALTEEN, viimesen voi laskea itse 
 
 	GLuint colAttrib = glGetAttribLocation(programId, "color");
 	glEnableVertexAttribArray(colAttrib);
-	glVertexAttribPointer(colAttrib, 3, GL_FLOAT, GL_FALSE, 7 * sizeof(float), (void*)(2 * sizeof(float)));
+	glVertexAttribPointer(colAttrib, 3, GL_FLOAT, GL_FALSE, 9 * sizeof(float), (void*)(3 * sizeof(float)));
 
 	GLuint texAttrib = glGetAttribLocation(programId, "texcoord");
 	glEnableVertexAttribArray(texAttrib);
-	glVertexAttribPointer(texAttrib, 2, GL_FLOAT, GL_FALSE, 7 * sizeof(float), (void*)(5 * sizeof(float)));
+	glVertexAttribPointer(texAttrib, 3, GL_FLOAT, GL_FALSE, 9 * sizeof(float), (void*)(6 * sizeof(float)));
 
-	const GLuint projLocation = glGetUniformLocation(programId, "proj");
+	//const GLuint projLocation = glGetUniformLocation(programId, "proj");
 
 	GLfloat asd = glGetUniformLocation(programId, "time");
 
 	float time = 0;
 
-	const glm::mat4 projection = glm::ortho(0.0f, static_cast<float>(wSize.bottom), static_cast<float>(wSize.right), 0.0f, -1.0f, 1.0f);
+	//ORTHO CAMERA
+	/*
+	const glm::mat4 projection = glm::ortho(0.0f, static_cast<float>(wSize.bottom), static_cast<float>(wSize.right), 0.0f, 0.0f, 1.0f);
 	glUseProgram(programId);
 	glUniformMatrix4fv(projLocation, 1, GL_FALSE, reinterpret_cast<const float*>(&projection));
+	*/
 
 	//main message loop
 	while (!quit)
