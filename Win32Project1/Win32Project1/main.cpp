@@ -14,6 +14,7 @@
 #include "lodepng.h"
 #include "glm\glm.hpp"
 #include "glm\gtc\matrix_transform.hpp"
+#include "glm\gtx\transform.hpp"
 
 #include "Sprite.h"
 
@@ -95,25 +96,25 @@ GLuint loadShaders(const char* vsPath, const char* fsPath)
 //vertex array
 GLfloat vertices[] =
 {
-//  Position(3)				 Color(3)			 Coordinates(3)
-	-0.5f,-0.5f,-0.5f,		 1.0f, 0.0f, 0.0f,	 0.0f, 0.0f, 0.0f,
-	-0.5f, 0.5f, -0.5f,		 1.0f, 0.0f, 0.0f,	 0.0f, -1.0f, 0.0f,
-	0.5f, 0.5f, -0.5f,		 1.0f, 0.0f, 0.0f,	 -1.0f, -1.0f, 0.0f,
-	0.5f, -0.5f, -0.5f,		 1.0f, 0.0f, 0.0f,	 -1.0f, 0.0f, 0.0f,
-	-0.5f, -0.5f, 0.5f,		 1.0f, 0.0f, 0.0f,	 0.0f, 0.0f, -1.0f,
-	-0.5f, 0.5f, 0.5f,		 1.0f, 0.0f, 0.0f,	 0.0f, -1.0f, -1.0f,
-	0.5f, 0.5f, 0.5f,		 1.0f, 0.0f, 0.0f,	 -1.0f, -1.0f, -1.0f,
-	0.5f, -0.5f, 0.5f,		 1.0f, 0.0f, 0.0f,	 -1.0f, 0.0f, -1.0f
+//  Position(3)				 Color(3)			 Coordinates(2)
+	-0.5f,-0.5f,-0.5f,		 1.0f, 0.0f, 0.0f,	 0.0f, 0.0f,
+	-0.5f, 0.5f, -0.5f,		 1.0f, 0.0f, 0.0f,	 0.0f, -1.0f,
+	0.5f, 0.5f, -0.5f,		 1.0f, 0.0f, 0.0f,	 -1.0f, -1.0f,
+	0.5f, -0.5f, -0.5f,		 1.0f, 0.0f, 0.0f,	 -1.0f, 0.0f,
+	-0.2f, -0.2f, 0.5f,		 1.0f, 0.0f, 0.0f,	 0.0f, 0.0f,
+	-0.2f, 0.2f, 0.5f,		 1.0f, 0.0f, 0.0f,	 0.0f, -1.0f,
+	0.2f, 0.2f, 0.5f,		 1.0f, 0.0f, 0.0f,	 -1.0f, -1.0f,
+	0.2f, -0.2f, 0.5f,		 1.0f, 0.0f, 0.0f,	 -1.0f, 0.0f,
 };
 
 GLuint indices[] =
 {
-	4, 5, 1, 0,
-	5, 6, 2, 1,
-	6, 7, 3, 2,
-	7, 4, 0, 3,
 	0, 1, 2, 3,
-	7, 6, 5, 4
+	7, 6, 5, 4,
+	7, 4, 0, 3,
+	6, 7, 3, 2,
+	5, 6, 2, 1,
+	4, 5, 1, 0
 };
 
 //DRAW
@@ -123,7 +124,7 @@ void renderFrame(GLfloat asd, float time)
 
 	glUniform1f(asd, time);
 	
-	glDrawElements(GL_QUADS, 32, GL_UNSIGNED_INT, 0);
+	glDrawElements(GL_QUADS, 24, GL_UNSIGNED_INT, 0);
 }
 
 //VBO creation
@@ -233,6 +234,7 @@ int main()
 		MessageBox(NULL, L"glewInit() failure", NULL, NULL);
 		return -1;
 	}
+	glEnable(GL_DEPTH_TEST);
 
 	//create VBO
 	int size = sizeof(vertices);
@@ -248,7 +250,7 @@ int main()
 
 	std::vector<unsigned char> image;
 	unsigned width, height;
-	unsigned error = lodepng::decode (image, width, height, "testings.png");
+	unsigned error = lodepng::decode(image, width, height, "testings_norm.png");
 	assert(error == 0);
 
 	glEnable(GL_TEXTURE_2D);
@@ -258,28 +260,75 @@ int main()
 	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
 	glTexImage2D(GL_TEXTURE_2D, 0, 4, width, height, 0, GL_RGBA, GL_UNSIGNED_BYTE, image.data());
 
+	//TEST STUFF
+
+	GLuint texture2;
+	glGenTextures(1, &texture2);
+	glBindTexture(GL_TEXTURE_2D, texture2);
+
+	std::vector<unsigned char> image2;
+	unsigned width2, height2;
+	unsigned error2 = lodepng::decode(image2, width2, height2, "testings.png");
+	assert(error == 0);
+
+	glEnable(GL_TEXTURE_2D);
+	glEnable(GL_BLEND);
+	glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
+
+	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
+	glTexImage2D(GL_TEXTURE_2D, 0, 4, width2, height2, 0, GL_RGBA, GL_UNSIGNED_BYTE, image2.data());
+	
 	//shaders
 	GLuint programId = loadShaders("Data/VertexShader.txt", "Data/FragmentShader.txt");
 	glUseProgram(programId);
 
 	GLuint posAttrib = glGetAttribLocation(programId, "position");   //"position" talteen, "käyttäjä" määrittää
 	glEnableVertexAttribArray(posAttrib);
-	glVertexAttribPointer(posAttrib, 3, GL_FLOAT, GL_FALSE, 9 * sizeof(float), 0);
+	glVertexAttribPointer(posAttrib, 3, GL_FLOAT, GL_FALSE, 8 * sizeof(float), 0);
 	//size tarviiiiiii, (FLOAT TULEVAISUUDESSA WRÄPÄTÄÄN), stride TALTEEN, viimesen voi laskea itse 
 
 	GLuint colAttrib = glGetAttribLocation(programId, "color");
 	glEnableVertexAttribArray(colAttrib);
-	glVertexAttribPointer(colAttrib, 3, GL_FLOAT, GL_FALSE, 9 * sizeof(float), (void*)(3 * sizeof(float)));
+	glVertexAttribPointer(colAttrib, 3, GL_FLOAT, GL_FALSE, 8 * sizeof(float), (void*)(3 * sizeof(float)));
 
 	GLuint texAttrib = glGetAttribLocation(programId, "texcoord");
 	glEnableVertexAttribArray(texAttrib);
-	glVertexAttribPointer(texAttrib, 3, GL_FLOAT, GL_FALSE, 9 * sizeof(float), (void*)(6 * sizeof(float)));
+	glVertexAttribPointer(texAttrib, 2, GL_FLOAT, GL_FALSE, 8 * sizeof(float), (void*)(6 * sizeof(float)));
 
 	//const GLuint projLocation = glGetUniformLocation(programId, "proj");
 
+	//////////////UNIFORMIT
 	GLfloat asd = glGetUniformLocation(programId, "time");
-
 	float time = 0;
+
+	GLuint diffuse = glGetUniformLocation(programId, "tex");
+	diffuse = texture;
+	GLuint normal = glGetUniformLocation(programId, "norm");
+	normal = texture2;
+	GLuint lightpos = glGetUniformLocation(programId, "lightPos");
+	glUniform3f(lightpos, 0.0f, 0.0f, -1.0f);
+	GLuint resolution = glGetUniformLocation(programId, "Resolution");
+	glUniform2f(resolution, 800, 800);
+	GLuint lightcolor = glGetUniformLocation(programId, "lightColor");
+	glUniform4f(lightcolor, 1.0f, 1.0f, 1.0f, 1.0f);
+	GLuint ambientcolor = glGetUniformLocation(programId, "ambientColor");
+	glUniform4f(ambientcolor, 0.8f, 0.8f, 0.8f, 0.3f);
+	GLuint falloff = glGetUniformLocation(programId, "fallOff");
+	glUniform3f(falloff, 0.4f, 7.0f, 30.0f);
+	
+	GLint projectionIndex = glGetUniformLocation(programId, "unifProjection");
+	assert(projectionIndex != -1);
+
+	glm::mat4 projectionTransfrom = glm::perspective(1.047f, static_cast<float>(800) / 800, 0.01f, 1000.0f);
+	glUniformMatrix4fv(projectionIndex, 1, GL_FALSE, reinterpret_cast<float*>(&projectionTransfrom));
+
+	GLint worldIndex = glGetUniformLocation(programId, "unifWorld");
+	assert(worldIndex != -1);
+
+	glm::mat4 worldTransform = glm::translate(glm::vec3(0.0f, 0.0f, -100));
+	glUniformMatrix4fv(worldIndex, 1, GL_FALSE, reinterpret_cast<float*>(&worldTransform));
+
+
 
 	//ORTHO CAMERA
 	/*
@@ -287,6 +336,8 @@ int main()
 	glUseProgram(programId);
 	glUniformMatrix4fv(projLocation, 1, GL_FALSE, reinterpret_cast<const float*>(&projection));
 	*/
+
+
 
 	//main message loop
 	while (!quit)

@@ -1,18 +1,6 @@
-﻿Build started 28.10.2014 7:58:00.
-     1>Project "C:\Users\SlooBo\Documents\GitHub\testings\Win32Project1\Win32Project1\Win32Project1.vcxproj" on node 2 (Build target(s)).
-     1>ClCompile:
-         C:\Program Files (x86)\Microsoft Visual Studio 12.0\VC\bin\CL.exe /c /ZI /nologo /W3 /WX- /Od /Oy- /D WIN32 /D _DEBUG /D _WINDOWS /D _UNICODE /D UNICODE /Gm /EHsc /RTC1 /MDd /GS /fp:precise /Zc:wchar_t /Zc:forScope /Fo"Debug\\" /Fd"Debug\vc120.pdb" /Gd /TP /analyze- /errorReport:prompt main.cpp
-         main.cpp
-     1>c:\users\sloobo\documents\github\testings\win32project1\win32project1\main.cpp(124): warning C4244: 'argument' : conversion from 'GLfloat' to 'GLint', possible loss of data
-     1>c:\users\sloobo\documents\github\testings\win32project1\win32project1\main.cpp(280): warning C4244: 'initializing' : conversion from 'GLint' to 'GLfloat', possible loss of data
-     1>c:\users\sloobo\documents\github\testings\win32project1\win32project1\main.cpp(190): warning C4715: 'WndProc' : not all control paths return a value
-       Link:
-         C:\Program Files (x86)\Microsoft Visual Studio 12.0\VC\bin\link.exe /ERRORREPORT:PROMPT /OUT:"C:\Users\SlooBo\Documents\GitHub\testings\Win32Project1\Debug\Win32Project1.exe" /INCREMENTAL /NOLOGO opengl32.lib glew32.lib kernel32.lib user32.lib gdi32.lib winspool.lib comdlg32.lib advapi32.lib shell32.lib ole32.lib oleaut32.lib uuid.lib odbc32.lib odbccp32.lib /MANIFEST /MANIFESTUAC:"level='asInvoker' uiAccess='false'" /manifest:embed /DEBUG /PDB:"C:\Users\SlooBo\Documents\GitHub\testings\Win32Project1\Debug\Win32Project1.pdb" /SUBSYSTEM:WINDOWS /TLBID:1 /ENTRY:"mainCRTStartup" /DYNAMICBASE /NXCOMPAT /IMPLIB:"C:\Users\SlooBo\Documents\GitHub\testings\Win32Project1\Debug\Win32Project1.lib" /MACHINE:X86 Debug\lodepng.obj
-         Debug\main.obj
-         Debug\Sprite.obj
-         Win32Project1.vcxproj -> C:\Users\SlooBo\Documents\GitHub\testings\Win32Project1\Debug\Win32Project1.exe
-     1>Done Building Project "C:\Users\SlooBo\Documents\GitHub\testings\Win32Project1\Win32Project1\Win32Project1.vcxproj" (Build target(s)).
-
-Build succeeded.
-
-Time Elapsed 00:00:01.00
+﻿  main.cpp
+c:\users\tti13shenrit\documents\github\testings\win32project1\win32project1\main.cpp(125): warning C4244: 'argument' : conversion from 'GLfloat' to 'GLint', possible loss of data
+c:\users\tti13shenrit\documents\github\testings\win32project1\win32project1\main.cpp(301): warning C4244: 'initializing' : conversion from 'GLint' to 'GLfloat', possible loss of data
+  GLM: perspective function taking degrees as a parameter is deprecated. #define GLM_FORCE_RADIANS before including GLM headers to remove this message.
+c:\users\tti13shenrit\documents\github\testings\win32project1\win32project1\main.cpp(191): warning C4715: 'WndProc' : not all control paths return a value
+  Win32Project1.vcxproj -> C:\Users\tti13shenrit\Documents\GitHub\testings\Win32Project1\Debug\Win32Project1.exe
