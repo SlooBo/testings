@@ -6,14 +6,15 @@ uniform vec4 ambientColor;
 uniform vec3 fallOff;
 
 uniform sampler2D tex;
-uniform sampler2D norm;
+uniform sampler2D norm;	
 
-varying vec4 Color;
+varying vec3 Color;
 varying vec3 Position;
 varying vec2 Texcoord;
 
 void main()
 {
+
 	vec4 diffuseColor = texture2D(tex, Texcoord);
 	vec3 normalMap = texture2D(norm, Texcoord).rgb;
 
@@ -36,7 +37,7 @@ void main()
 	//Color * 
 	gl_FragColor = vec4(finalColor, diffuseColor.a);
 /*
-	gl_FragColor = texture(tex, Texcoord) * vec4(Color);
+	gl_FragColor = texture(tex, Texcoord) * vec4(Color, 1.0);
 	gl_FragColor.a = 1.0;
 */
 }

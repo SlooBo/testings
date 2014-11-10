@@ -1,21 +1,20 @@
 attribute vec3 position;
-attribute vec4 color;
+attribute vec3 color;
 attribute vec2 texcoord;
 
-varying vec4 Color;
+varying vec3 Color;
 varying vec3 Position;
 varying vec2 Texcoord;
 
-uniform mat4 proj;
 uniform mat4 unifProjection;
 uniform mat4 unifWorld;
+uniform mat4 unifView;
 
 void main()
 {
 	Texcoord = texcoord;
 	Position = position;
 	Color = color;
-	//proj *  
 
-	gl_Position = unifProjection * unifWorld * vec4(Position, 1.0);
+	gl_Position = unifProjection * unifWorld * unifView * vec4(Position, 1.0);
 }
