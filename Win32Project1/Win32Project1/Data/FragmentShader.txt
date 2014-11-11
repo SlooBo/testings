@@ -5,6 +5,8 @@ uniform vec4 lightColor;
 uniform vec4 ambientColor;
 uniform vec3 fallOff;
 
+uniform float unifAlpha;
+
 uniform sampler2D tex;
 uniform sampler2D norm;	
 
@@ -14,7 +16,7 @@ varying vec2 Texcoord;
 
 void main()
 {
-
+/*
 	vec4 diffuseColor = texture2D(tex, Texcoord);
 	vec3 normalMap = texture2D(norm, Texcoord).rgb;
 
@@ -34,10 +36,12 @@ void main()
 
 	vec3 intensity = ambient + diffuse * attenuation;
 	vec3 finalColor = diffuseColor.rgb * intensity;
-	//Color * 
+
 	gl_FragColor = vec4(finalColor, diffuseColor.a);
-/*
-	gl_FragColor = texture(tex, Texcoord) * vec4(Color, 1.0);
-	gl_FragColor.a = 1.0;
 */
+	vec4 diffuseColor = texture2D(tex, Texcoord);
+
+	gl_FragColor.rgb = diffuseColor;
+	gl_FragColor.a = unifAlpha;
+
 }

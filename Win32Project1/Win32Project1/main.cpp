@@ -109,36 +109,58 @@ GLfloat vertices[] =
 
 GLuint indices[] =
 {
-	0, 1, 2, 3,
-	7, 6, 5, 4,
-	7, 4, 0, 3,
-	6, 7, 3, 2,
-	5, 6, 2, 1,
-	4, 5, 1, 0
+	0, 1, 2,
+	0,2,3,	
+	4,5,6,
+	4,6,7,
+	0,1,5,
+	0,5,4,
+	0,4,7,
+	0,7,3,
+	3,2,6,
+	3,6,7,
+	2,1,5,
+	2,5,6
+	
 };
 
 GLfloat vertices2[] = 
 {
 	//  Position(3)				 Color(3)			 Coordinates(2)
-	-1.f, -1.f, 0.5f,			 1.0f, 0.0f, 0.0f,	 0.0f, 0.0f,
-	1.f, -1.f, 0.5f,			 1.0f, 0.0f, 0.0f,	 0.0f, -1.0f,
-	-1.0f, -1.0f, -1.5f,		 1.0f, 0.0f, 0.0f,	 -1.0f, 0.0f,
-	1.0f, -1.0f, -1.5f,			 1.0f, 0.0f, 0.0f,	 -1.0f, -1.0f,
+	-.5f, -.0f, 0.5f,			 0.0f, 1.0f, 0.0f,	 0.0f, 0.0f,
+	.5f, -.0f, 0.5f,			 0.0f, 1.0f, 0.0f,	 0.0f, -1.0f,
+	-.5f, -.0f, -.5f,			 0.0f, 1.0f, 0.0f,	 -1.0f, 0.0f,
+	.5f, -.0f, -.5f,			 0.0f, 1.0f, 0.0f,	 -1.0f, -1.0f,
 
 };
+
 
 GLuint indices2[] = 
 {
-	0, 1, 3, 2
+	0, 1, 2,
+	1, 2, 3
 };
 
+GLfloat vertices3[] =
+{
+	//  Position(3)				 Color(3)			 Coordinates(2)
+	0.0f, -.0f, 0.5f,			 1.0f, 0.0f, 0.0f,	 0.0f, 0.0f,
+	0.0f, 1.f, 0.5f,			 1.0f, 0.0f, 0.0f,	 0.0f, -1.0f,
+	0.0f, -.0f, -.5f,			 1.0f, 0.0f, 0.0f,	 -1.0f, 0.0f,
+	0.0f, 1.f, -.5f,			 1.0f, 0.0f, 0.0f,	 -1.0f, -1.0f,
+};
 
+GLuint indices3[] =
+{
+	0, 1, 2,
+	1, 2, 3
+};
 //DRAW
 void renderFrame(GLfloat asd, float time, GLuint count)
 {
 	glUniform1f(asd, time);
 	
-	glDrawElements(GL_QUADS, count, GL_UNSIGNED_INT, 0);
+	glDrawElements(GL_TRIANGLES, count, GL_UNSIGNED_INT, 0);
 }
 
 //VBO creation
@@ -179,7 +201,7 @@ LRESULT CALLBACK WndProc(HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lParam)
 			24,
 			24
 		};
-		pfd.cStencilBits = 8;
+		pfd.cStencilBits = 8u;
 
 		hDc = GetDC(hWnd);
 		pixelFormat = ChoosePixelFormat(hDc, &pfd);
@@ -274,7 +296,15 @@ int main()
 	size = sizeof(indices2);
 	ebo = createEbo(&indices2[0], size);
 	ebob.push_back(ebo);
-	
+
+	size = sizeof(vertices3);
+	vbo = createVbo(&vertices3[0], size);
+	vbob.push_back(vbo);
+
+	size = sizeof(indices3);
+	ebo = createEbo(&indices3[0], size);
+	ebob.push_back(ebo);
+
 	//textures
 	GLuint texture;
 	glGenTextures(1, &texture);
@@ -282,7 +312,7 @@ int main()
 
 	std::vector<unsigned char> image;
 	unsigned width, height;
-	unsigned error = lodepng::decode(image, width, height, "testings_norm.png");
+	unsigned error = lodepng::decode(image, width, height, "testings.png");
 	assert(error == 0);
 
 	glEnable(GL_TEXTURE_2D);
@@ -292,6 +322,8 @@ int main()
 	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
 	glTexImage2D(GL_TEXTURE_2D, 0, 4, width, height, 0, GL_RGBA, GL_UNSIGNED_BYTE, image.data());
 
+	glBindTexture(GL_TEXTURE_2D, 0u);
+
 	//TEST STUFF
 
 	GLuint texture2;
@@ -300,7 +332,7 @@ int main()
 
 	std::vector<unsigned char> image2;
 	unsigned width2, height2;
-	unsigned error2 = lodepng::decode(image2, width2, height2, "testings.png");
+	unsigned error2 = lodepng::decode(image2, width2, height2, "testings_norm.png");
 	assert(error == 0);
 
 	glEnable(GL_TEXTURE_2D);
@@ -310,8 +342,8 @@ int main()
 	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
 	glTexImage2D(GL_TEXTURE_2D, 0, 4, width2, height2, 0, GL_RGBA, GL_UNSIGNED_BYTE, image2.data());
 
-	//glBindTexture(GL_TEXTURE_2D, 0u);
-
+	glBindTexture(GL_TEXTURE_2D, 0u);
+	
 	//shaders
 	GLuint programId = loadShaders("Data/VertexShader.txt", "Data/FragmentShader.txt");
 	glUseProgram(programId);
@@ -320,11 +352,11 @@ int main()
 	GLfloat asd = glGetUniformLocation(programId, "time");
 	float time = 0;
 	float rotation = 0;
-
 	GLuint diffuse = glGetUniformLocation(programId, "tex");
-	diffuse = texture2;
+	glUniform1i(diffuse, texture);
 	GLuint normal = glGetUniformLocation(programId, "norm");
-	normal = texture;
+	glUniform1i(normal, texture2);
+	
 	GLuint lightpos = glGetUniformLocation(programId, "lightPos");
 	glUniform3f(lightpos, 0.5f, 0.5f, -0.f);
 	GLuint resolution = glGetUniformLocation(programId, "Resolution");
@@ -336,28 +368,49 @@ int main()
 	GLuint falloff = glGetUniformLocation(programId, "fallOff");
 	glUniform3f(falloff, 0.4f, 7.0f, 30.0f);
 	
+	//projektio
 	GLint projectionIndex = glGetUniformLocation(programId, "unifProjection");
 	assert(projectionIndex != -1);
 
 	glm::mat4 projectionTransfrom = glm::perspective(60.0f, static_cast<float>(800) / 800, 0.01f, 1000.0f);
 	glUniformMatrix4fv(projectionIndex, 1, GL_FALSE, reinterpret_cast<float*>(&projectionTransfrom));
 
+	//world
 	GLint worldIndex = glGetUniformLocation(programId, "unifWorld");
 	assert(worldIndex != -1);
-
-	glm::mat4 worldTransform = glm::translate(glm::vec3(0.0f, 0.0f, -1.0f));
+	/*
+	glm::mat4 worldTransform = glm::translate(glm::vec3(0.0f, 0.0f, -2.0f));
 	glUniformMatrix4fv(worldIndex, 1, GL_FALSE, reinterpret_cast<float*>(&worldTransform));
+	*/
 
+	GLfloat qwe1 = glGetUniformLocation(programId, "unifAlpha");
+	glUniform1f(qwe1, 1.f);
+
+	//view
 	GLint viewIndex = glGetUniformLocation(programId, "unifView");
-	assert(viewIndex != 1);
+	assert(viewIndex != -1);
 
-	glm::mat4 viewTransform = glm::translate(glm::vec3(0.0, 0.0f, -1.0f));
+	glm::mat4 viewTransform = glm::translate(glm::vec3(0.0f, -2.0f, -5.0f)) * glm::rotate(-30.0f, glm::vec3(0.0f, 1.0f, 0.0f));
 	glUniformMatrix4fv(viewIndex, 1, GL_FALSE, reinterpret_cast<float*>(&viewTransform));
+
+	/*
+	//normal matrix
+	GLint normalIndex = glGetUniformLocation(programId, "unifNormal");
+	assert(normalIndex != -1);
+
+	glm::mat4 normalTransform = glm::transpose(glm::inverse(viewTransform));
+	glUniformMatrix4fv(normalIndex, 1, GL_FALSE, reinterpret_cast<float*>(&normalTransform));
+	*/
+
+	GLuint posAttrib = glGetAttribLocation(programId, "position");
+	GLuint colAttrib = glGetAttribLocation(programId, "color");
+	GLuint texAttrib = glGetAttribLocation(programId, "texcoord");
 
 	//main message loop
 	while (!quit)
 	{
 		time += 0.1f;
+		glStencilMask(0xFF);
 		glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT | GL_STENCIL_BUFFER_BIT); //STENCIL VITTUUN JOS EI TARVII
 
 		while (PeekMessage(&uMsg, NULL, NULL, NULL, PM_REMOVE))
@@ -372,14 +425,8 @@ int main()
 		}
 
 		rotation++;
-		/*
-		glm::mat4 worldTransform = glm::translate(glm::vec3(0.0f, 0.0f, -2.0f)) * glm::rotate(rotation, glm::vec3(0.0f, 1.0f, 1.0f));
-		glUniformMatrix4fv(worldIndex, 1, GL_FALSE, reinterpret_cast<float*>(&worldTransform));
-		*/
-
-		GLuint posAttrib = glGetAttribLocation(programId, "position");
-		GLuint colAttrib = glGetAttribLocation(programId, "color");
-		GLuint texAttrib = glGetAttribLocation(programId, "texcoord");
+		glUseProgram(programId);
+		glStencilMask(0x00);
 
 		glEnableVertexAttribArray(posAttrib);
 		glEnableVertexAttribArray(colAttrib);
@@ -392,9 +439,15 @@ int main()
 		glStencilMask(0xFF);
 		glDepthMask(GL_FALSE);
 
-		//plane
-		glm::mat4 viewTransform = glm::translate(glm::vec3(0.0, 0.0f, -1.0f));
-		glUniformMatrix4fv(viewIndex, 1, GL_FALSE, reinterpret_cast<float*>(&viewTransform));
+		//plane		
+		glActiveTexture(GL_TEXTURE0 + texture);
+		glBindTexture(GL_TEXTURE_2D, texture);
+		glActiveTexture(GL_TEXTURE0 + texture2);
+		glBindTexture(GL_TEXTURE_2D, normal);
+		
+
+		glm::mat4 worldTransform = glm::rotate(rotation, glm::vec3(0.0f, 1.0f, 0.0f));
+		glUniformMatrix4fv(worldIndex, 1, GL_FALSE, reinterpret_cast<float*>(&worldTransform));
 
 		glBindBuffer(GL_ARRAY_BUFFER, vbob[1]);
 		glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, ebob[1]);
@@ -403,20 +456,59 @@ int main()
 		glVertexAttribPointer(colAttrib, 3, GL_FLOAT, GL_FALSE, 8 * sizeof(float), (void*)(3 * sizeof(float)));
 		glVertexAttribPointer(texAttrib, 2, GL_FLOAT, GL_FALSE, 8 * sizeof(float), (void*)(6 * sizeof(float)));
 
-		renderFrame(asd, time, 4);
+		renderFrame(asd, time, 6);
+
+		glBindBuffer(GL_ARRAY_BUFFER, 0u);
+		glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, 0u);
+		
+		//stencil options
+		glStencilFunc(GL_EQUAL, 1, 0xff);
+		glStencilMask(0x00);
+		glDepthMask(GL_TRUE);
+		
+		//reflection
+
+		glUniform1f(qwe1, .5f);
+
+		worldTransform = glm::rotate(rotation, glm::vec3(0.0f, 1.0f, 0.0f)) * glm::scale(glm::vec3(1.0f, -1.0f, 1.0f));
+		glUniformMatrix4fv(worldIndex, 1, GL_FALSE, reinterpret_cast<float*>(&worldTransform));
+
+		glBindBuffer(GL_ARRAY_BUFFER, vbob[2]);
+		glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, ebob[2]);
+
+		glVertexAttribPointer(posAttrib, 3, GL_FLOAT, GL_FALSE, 8 * sizeof(float), 0);
+		glVertexAttribPointer(colAttrib, 3, GL_FLOAT, GL_FALSE, 8 * sizeof(float), (void*)(3 * sizeof(float)));
+		glVertexAttribPointer(texAttrib, 2, GL_FLOAT, GL_FALSE, 8 * sizeof(float), (void*)(6 * sizeof(float)));
+		renderFrame(asd, time, 6);
 
 		glBindBuffer(GL_ARRAY_BUFFER, 0u);
 		glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, 0u);
 
+
 		//stencil options
 		glDisable(GL_STENCIL_TEST);
-		glStencilFunc(GL_EQUAL, 1, 0xff);
-		glStencilMask(0x00);
-		glDepthMask(GL_TRUE);
+		glUniform1f(qwe1, 1.f);
 
+		//plane2
+		
+		worldTransform = glm::rotate(rotation, glm::vec3(0.0f, 1.0f, 0.0f));
+		glUniformMatrix4fv(worldIndex, 1, GL_FALSE, reinterpret_cast<float*>(&worldTransform));
+
+		glBindBuffer(GL_ARRAY_BUFFER, vbob[2]);
+		glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, ebob[2]);
+
+		glVertexAttribPointer(posAttrib, 3, GL_FLOAT, GL_FALSE, 8 * sizeof(float), 0);
+		glVertexAttribPointer(colAttrib, 3, GL_FLOAT, GL_FALSE, 8 * sizeof(float), (void*)(3 * sizeof(float)));
+		glVertexAttribPointer(texAttrib, 2, GL_FLOAT, GL_FALSE, 8 * sizeof(float), (void*)(6 * sizeof(float)));
+		renderFrame(asd, time, 6);
+
+		glBindBuffer(GL_ARRAY_BUFFER, 0u);
+		glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, 0u);
+		
+		
 		//palikka1
-		viewTransform = glm::translate(glm::vec3(0.0f, 0.0f, -1.0f))  * glm::rotate(rotation, glm::vec3(1.0f, 0.0f, 1.0f));
-		glUniformMatrix4fv(viewIndex, 1, GL_FALSE, reinterpret_cast<float*>(&viewTransform));
+		worldTransform = glm::translate(glm::vec3(0.0f, 2.0f, 0.0f))  * glm::rotate(rotation, glm::vec3(1.0f, 0.0f, 1.0f));
+		glUniformMatrix4fv(worldIndex, 1, GL_FALSE, reinterpret_cast<float*>(&worldTransform));
 
 		glBindBuffer(GL_ARRAY_BUFFER, vbob[0]);
 		glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, ebob[0]);
@@ -425,14 +517,14 @@ int main()
 		glVertexAttribPointer(colAttrib, 3, GL_FLOAT, GL_FALSE, 8 * sizeof(float), (void*)(3 * sizeof(float)));
 		glVertexAttribPointer(texAttrib, 2, GL_FLOAT, GL_FALSE, 8 * sizeof(float), (void*)(6 * sizeof(float)));
 
-		renderFrame(asd, time, 24);
+		renderFrame(asd, time, 36);
 
 		glBindBuffer(GL_ARRAY_BUFFER, 0u);
 		glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, 0u);
 		
 		//palikka 2
-		viewTransform = glm::translate(glm::vec3(1.0, 0.0f, -1.0f))  * glm::rotate(rotation, glm::vec3(1.0f, 0.0f, 1.0f));
-		glUniformMatrix4fv(viewIndex, 1, GL_FALSE, reinterpret_cast<float*>(&viewTransform));
+		worldTransform = glm::translate(glm::vec3(1.0, 2.0f, 0.0f))  * glm::rotate(rotation, glm::vec3(1.0f, 0.0f, 1.0f));
+		glUniformMatrix4fv(worldIndex, 1, GL_FALSE, reinterpret_cast<float*>(&worldTransform));
 
 		glBindBuffer(GL_ARRAY_BUFFER, vbob[0]);
 		glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, ebob[0]);
@@ -441,12 +533,12 @@ int main()
 		glVertexAttribPointer(colAttrib, 3, GL_FLOAT, GL_FALSE, 8 * sizeof(float), (void*)(3 * sizeof(float)));
 		glVertexAttribPointer(texAttrib, 2, GL_FLOAT, GL_FALSE, 8 * sizeof(float), (void*)(6 * sizeof(float)));
 
-		renderFrame(asd, time, 24);
+		renderFrame(asd, time, 36);
 
 		glBindBuffer(GL_ARRAY_BUFFER, 0u);
 		glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, 0u);
-		
-		
+	
+		glUseProgram(0u);
 		SwapBuffers(hDc);
 	}
 }

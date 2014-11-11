@@ -1,1 +1,11 @@
-﻿  Win32Project1.vcxproj -> C:\Users\tti13shenrit\Documents\GitHub\testings\Win32Project1\Debug\Win32Project1.exe
+﻿  main.cpp
+c:\users\tti13shenrit\documents\github\testings\win32project1\win32project1\main.cpp(161): warning C4244: 'argument' : conversion from 'GLfloat' to 'GLint', possible loss of data
+c:\users\tti13shenrit\documents\github\testings\win32project1\win32project1\main.cpp(352): warning C4244: 'initializing' : conversion from 'GLint' to 'GLfloat', possible loss of data
+c:\users\tti13shenrit\documents\github\testings\win32project1\win32project1\main.cpp(386): warning C4244: 'initializing' : conversion from 'GLint' to 'GLfloat', possible loss of data
+c:\users\tti13shenrit\documents\github\testings\win32project1\win32project1\main.cpp(387): warning C4244: 'argument' : conversion from 'GLfloat' to 'GLint', possible loss of data
+c:\users\tti13shenrit\documents\github\testings\win32project1\win32project1\main.cpp(467): warning C4244: 'argument' : conversion from 'GLfloat' to 'GLint', possible loss of data
+c:\users\tti13shenrit\documents\github\testings\win32project1\win32project1\main.cpp(486): warning C4244: 'argument' : conversion from 'GLfloat' to 'GLint', possible loss of data
+  GLM: perspective function taking degrees as a parameter is deprecated. #define GLM_FORCE_RADIANS before including GLM headers to remove this message.
+  GLM: rotate function taking degrees as a parameter is deprecated. #define GLM_FORCE_RADIANS before including GLM headers to remove this message.
+c:\users\tti13shenrit\documents\github\testings\win32project1\win32project1\main.cpp(230): warning C4715: 'WndProc' : not all control paths return a value
+  Win32Project1.vcxproj -> C:\Users\tti13shenrit\Documents\GitHub\testings\Win32Project1\Debug\Win32Project1.exe

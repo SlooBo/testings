@@ -6,9 +6,12 @@ varying vec3 Color;
 varying vec3 Position;
 varying vec2 Texcoord;
 
+varying mat4 asd;
+
 uniform mat4 unifProjection;
 uniform mat4 unifWorld;
 uniform mat4 unifView;
+uniform mat4 unifNormal;
 
 void main()
 {
@@ -16,5 +19,5 @@ void main()
 	Position = position;
 	Color = color;
 
-	gl_Position = unifProjection * unifWorld * unifView * vec4(Position, 1.0);
+	gl_Position = unifProjection * unifView * unifWorld * vec4(Position, 1.0);
 }
