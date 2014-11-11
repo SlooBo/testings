@@ -138,22 +138,36 @@ GLfloat vertices2[] =
 GLuint indices2[] = 
 {
 	0, 1, 2,
-	1, 2, 3
+	1, 2, 3,
 };
 
 GLfloat vertices3[] =
 {
 	//  Position(3)				 Color(3)			 Coordinates(2)
-	0.0f, -.0f, 0.5f,			 1.0f, 0.0f, 0.0f,	 0.0f, 0.0f,
-	0.0f, 1.f, 0.5f,			 1.0f, 0.0f, 0.0f,	 0.0f, -1.0f,
-	0.0f, -.0f, -.5f,			 1.0f, 0.0f, 0.0f,	 -1.0f, 0.0f,
-	0.0f, 1.f, -.5f,			 1.0f, 0.0f, 0.0f,	 -1.0f, -1.0f,
+	0.2f, -.0f, 0.2f,			 1.0f, 0.0f, 0.0f,	 0.0f, 0.0f,
+	0.2f, .5f, 0.2f,			 1.0f, 0.0f, 0.0f,	 0.0f, -1.0f,
+	0.2f, -.0f, -.2f,			 1.0f, 0.0f, 0.0f,	 -1.0f, 0.0f,
+	0.2f, .5f, -.2f,			 1.0f, 0.0f, 0.0f,	 -1.0f, -1.0f,
+	-0.2f, -.0f, 0.2f,			 1.0f, 0.0f, 0.0f,	 0.0f, 0.0f,
+	-0.2f, .5f, 0.2f,			 1.0f, 0.0f, 0.0f,	 0.0f, -1.0f,
+	-0.2f, -.0f, -.2f,			 1.0f, 0.0f, 0.0f,	 -1.0f, 0.0f,
+	-0.2f, .5f, -.2f,			 1.0f, 0.0f, 0.0f,	 -1.0f, -1.0f,
 };
 
 GLuint indices3[] =
 {
 	0, 1, 2,
-	1, 2, 3
+	1, 2, 3,
+	4, 5, 6,
+	5, 6, 7,
+	0, 1, 5,
+	0, 5, 4,
+	0, 4, 7,
+	0, 7, 3,
+	3, 2, 6,
+	3, 6, 7,
+	2, 1, 5,
+	2, 5, 6
 };
 //DRAW
 void renderFrame(GLfloat asd, float time, GLuint count)
@@ -438,7 +452,7 @@ int main()
 		glStencilOp(GL_KEEP, GL_KEEP, GL_REPLACE);
 		glStencilMask(0xFF);
 		glDepthMask(GL_FALSE);
-
+		
 		//plane		
 		glActiveTexture(GL_TEXTURE0 + texture);
 		glBindTexture(GL_TEXTURE_2D, texture);
@@ -465,7 +479,7 @@ int main()
 		glStencilFunc(GL_EQUAL, 1, 0xff);
 		glStencilMask(0x00);
 		glDepthMask(GL_TRUE);
-		
+
 		//reflection
 
 		glUniform1f(qwe1, .5f);
@@ -479,11 +493,10 @@ int main()
 		glVertexAttribPointer(posAttrib, 3, GL_FLOAT, GL_FALSE, 8 * sizeof(float), 0);
 		glVertexAttribPointer(colAttrib, 3, GL_FLOAT, GL_FALSE, 8 * sizeof(float), (void*)(3 * sizeof(float)));
 		glVertexAttribPointer(texAttrib, 2, GL_FLOAT, GL_FALSE, 8 * sizeof(float), (void*)(6 * sizeof(float)));
-		renderFrame(asd, time, 6);
+		renderFrame(asd, time, 36);
 
 		glBindBuffer(GL_ARRAY_BUFFER, 0u);
 		glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, 0u);
-
 
 		//stencil options
 		glDisable(GL_STENCIL_TEST);
@@ -500,7 +513,7 @@ int main()
 		glVertexAttribPointer(posAttrib, 3, GL_FLOAT, GL_FALSE, 8 * sizeof(float), 0);
 		glVertexAttribPointer(colAttrib, 3, GL_FLOAT, GL_FALSE, 8 * sizeof(float), (void*)(3 * sizeof(float)));
 		glVertexAttribPointer(texAttrib, 2, GL_FLOAT, GL_FALSE, 8 * sizeof(float), (void*)(6 * sizeof(float)));
-		renderFrame(asd, time, 6);
+		renderFrame(asd, time, 36);
 
 		glBindBuffer(GL_ARRAY_BUFFER, 0u);
 		glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, 0u);

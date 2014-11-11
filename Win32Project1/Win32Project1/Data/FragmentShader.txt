@@ -41,7 +41,7 @@ void main()
 */
 	vec4 diffuseColor = texture2D(tex, Texcoord);
 
-	gl_FragColor.rgb = diffuseColor;
+	gl_FragColor.rgb = Color;
 	gl_FragColor.a = unifAlpha;
 
 }
