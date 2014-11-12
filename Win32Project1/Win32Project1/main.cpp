@@ -3,6 +3,7 @@
 #endif
 
 #include <Windows.h>
+#include <windowsx.h>
 #include "glew.h"
 #include <gl\GL.h>
 #include <gl\GLU.h>
@@ -162,12 +163,12 @@ GLuint indices3[] =
 	5, 6, 7,
 	0, 1, 5,
 	0, 5, 4,
-	0, 4, 7,
-	0, 7, 3,
 	3, 2, 6,
 	3, 6, 7,
 	2, 1, 5,
-	2, 5, 6
+	2, 5, 6,
+	1, 7, 3,
+	1, 5, 7,
 };
 //DRAW
 void renderFrame(GLfloat asd, float time, GLuint count)
@@ -196,6 +197,17 @@ GLuint createEbo(GLuint *indices, GLint size)
 	glBufferData(GL_ELEMENT_ARRAY_BUFFER, size, indices, GL_STATIC_DRAW);
 	glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, 0u);
 	return eboId;
+}
+
+void init2DTexture(GLint texName, GLint texWidth, GLint texHeight, GLubyte *texPtr)
+{
+	glBindTexture(GL_TEXTURE_2D, texName);
+	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_REPEAT);
+	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_REPEAT);
+	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
+	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
+	glTexImage2D(GL_TEXTURE_2D, 0, GL_RGB, texWidth, texHeight, 0, GL_RGBA, GL_UNSIGNED_BYTE, texPtr);
+	glBindTexture(GL_TEXTURE_2D, 0u);
 }
 
 LRESULT CALLBACK WndProc(HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lParam)
@@ -237,6 +249,8 @@ LRESULT CALLBACK WndProc(HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lParam)
 			SendMessage(hWnd, WM_CLOSE, NULL, NULL);
 		}
 		return 0;
+
+	case WM_MOUSEMOVE:
 
 	default:
 		return DefWindowProc(hWnd, uMsg, wParam, lParam);
@@ -320,26 +334,25 @@ int main()
 	ebob.push_back(ebo);
 
 	//textures
-	GLuint texture;
-	glGenTextures(1, &texture);
-	glBindTexture(GL_TEXTURE_2D, texture);
+	GLuint texture_diffuse, texture_normal;
+	glGenTextures(1, &texture_diffuse);
 
 	std::vector<unsigned char> image;
 	unsigned width, height;
 	unsigned error = lodepng::decode(image, width, height, "testings.png");
 	assert(error == 0);
 
-	glEnable(GL_TEXTURE_2D);
-	glEnable(GL_BLEND);
-	glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
+	init2DTexture(texture_diffuse, width, height, image.data());
 
-	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
-	glTexImage2D(GL_TEXTURE_2D, 0, 4, width, height, 0, GL_RGBA, GL_UNSIGNED_BYTE, image.data());
+	glGenTextures(1, &texture_normal);
+	std::vector<unsigned char> image2;
+	error = lodepng::decode(image2, width, height, "testings_norm.png");
+	assert(error == 0);
 
-	glBindTexture(GL_TEXTURE_2D, 0u);
+	init2DTexture(texture_normal, width, height, image2.data());
 
 	//TEST STUFF
-
+	/*
 	GLuint texture2;
 	glGenTextures(1, &texture2);
 	glBindTexture(GL_TEXTURE_2D, texture2);
@@ -357,7 +370,7 @@ int main()
 	glTexImage2D(GL_TEXTURE_2D, 0, 4, width2, height2, 0, GL_RGBA, GL_UNSIGNED_BYTE, image2.data());
 
 	glBindTexture(GL_TEXTURE_2D, 0u);
-	
+	*/
 	//shaders
 	GLuint programId = loadShaders("Data/VertexShader.txt", "Data/FragmentShader.txt");
 	glUseProgram(programId);
@@ -367,12 +380,12 @@ int main()
 	float time = 0;
 	float rotation = 0;
 	GLuint diffuse = glGetUniformLocation(programId, "tex");
-	glUniform1i(diffuse, texture);
+	glUniform1i(diffuse, texture_diffuse);
 	GLuint normal = glGetUniformLocation(programId, "norm");
-	glUniform1i(normal, texture2);
+	glUniform1i(normal, texture_normal);
 	
 	GLuint lightpos = glGetUniformLocation(programId, "lightPos");
-	glUniform3f(lightpos, 0.5f, 0.5f, -0.f);
+	glUniform3f(lightpos, 0.0f, 0.0f, 1.0f);
 	GLuint resolution = glGetUniformLocation(programId, "Resolution");
 	glUniform2f(resolution, 800, 800);
 	GLuint lightcolor = glGetUniformLocation(programId, "lightColor");
@@ -420,6 +433,8 @@ int main()
 	GLuint colAttrib = glGetAttribLocation(programId, "color");
 	GLuint texAttrib = glGetAttribLocation(programId, "texcoord");
 
+	int posX, posY;
+
 	//main message loop
 	while (!quit)
 	{
@@ -439,6 +454,8 @@ int main()
 		}
 
 		rotation++;
+
+
 		glUseProgram(programId);
 		glStencilMask(0x00);
 
@@ -454,10 +471,10 @@ int main()
 		glDepthMask(GL_FALSE);
 		
 		//plane		
-		glActiveTexture(GL_TEXTURE0 + texture);
-		glBindTexture(GL_TEXTURE_2D, texture);
-		glActiveTexture(GL_TEXTURE0 + texture2);
-		glBindTexture(GL_TEXTURE_2D, normal);
+		glActiveTexture(GL_TEXTURE0 + texture_diffuse);
+		glBindTexture(GL_TEXTURE_2D, texture_diffuse);
+	//	glActiveTexture(GL_TEXTURE0 + texture2);
+		//glBindTexture(GL_TEXTURE_2D, normal);
 		
 
 		glm::mat4 worldTransform = glm::rotate(rotation, glm::vec3(0.0f, 1.0f, 0.0f));
@@ -502,7 +519,7 @@ int main()
 		glDisable(GL_STENCIL_TEST);
 		glUniform1f(qwe1, 1.f);
 
-		//plane2
+		//kuutio
 		
 		worldTransform = glm::rotate(rotation, glm::vec3(0.0f, 1.0f, 0.0f));
 		glUniformMatrix4fv(worldIndex, 1, GL_FALSE, reinterpret_cast<float*>(&worldTransform));
@@ -518,7 +535,7 @@ int main()
 		glBindBuffer(GL_ARRAY_BUFFER, 0u);
 		glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, 0u);
 		
-		
+	/*
 		//palikka1
 		worldTransform = glm::translate(glm::vec3(0.0f, 2.0f, 0.0f))  * glm::rotate(rotation, glm::vec3(1.0f, 0.0f, 1.0f));
 		glUniformMatrix4fv(worldIndex, 1, GL_FALSE, reinterpret_cast<float*>(&worldTransform));
@@ -550,7 +567,7 @@ int main()
 
 		glBindBuffer(GL_ARRAY_BUFFER, 0u);
 		glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, 0u);
-	
+	*/
 		glUseProgram(0u);
 		SwapBuffers(hDc);
 	}
