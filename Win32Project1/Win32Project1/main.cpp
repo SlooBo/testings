@@ -19,11 +19,86 @@
 
 #include "Sprite.h"
 
+using namespace std;
+
 HDC hDc;
 
 RECT wSize{ 100, 100, 800, 800 };
 static wchar_t wClassName[] = L"testClassName";
 static wchar_t wTitleName[] = L"testTitleName";
+
+bool loadOBJ(
+	const char* path,
+	std::vector<glm::vec3> &out_vertices,
+	std::vector<glm::vec2> &out_uvs,
+	std::vector<glm::vec3> &out_normals,
+	std::vector<unsigned int>  &vertexIndices,
+	std::vector<unsigned int>  &uvIndices,
+	std::vector<unsigned int>  &normalIndices
+	)
+{
+	FILE * file = fopen(path, "r");
+	if (file == NULL)
+	{
+		return false;
+	}
+	while (1)
+	{
+		char lineHeader[128];
+		int res = fscanf(file, "%s", lineHeader);
+		if (res == EOF)
+		{
+			break;
+		}
+
+		if (strcmp(lineHeader, "v") == 0)
+		{
+			glm::vec3 vertex;
+			fscanf(file, "%f %f %f\n", &vertex.x, &vertex.y, &vertex.z);
+			out_vertices.push_back(vertex);
+		}
+
+		else if (strcmp(lineHeader, "vt") == 0)
+		{
+			glm::vec2 uv;
+			fscanf(file, "%f %f %f\n", &uv.x, &uv.y);
+			out_uvs.push_back(uv);
+		}
+
+		else if (strcmp(lineHeader, "vn") == 0)
+		{
+			glm::vec3 normal;
+			fscanf(file, "%f %f %f\n", &normal.x, &normal.y, &normal.z);
+			out_normals.push_back(normal);
+		}
+
+		else if (strcmp(lineHeader, "f") == 0)
+		{
+			std::string vertex1, vertex2, vertex3;
+			unsigned int vertexIndex[3], uvIndex[3], normalIndex[3];
+			int matches = fscanf(file, "%d/%d/%d %d/%d/%d %d/%d/%d\n",
+				&vertexIndex[0], &uvIndex[0], &normalIndex[0],
+				&vertexIndex[1], &uvIndex[1], &normalIndex[1],
+				&vertexIndex[2], &uvIndex[2], &normalIndex[2]);
+			if (matches != 9)
+			{
+				MessageBox(NULL, L"oh shitnigga obj broken", wTitleName, NULL);
+				return false;
+			}
+
+			vertexIndices.push_back(vertexIndex[0]-1);
+			vertexIndices.push_back(vertexIndex[1]-1);
+			vertexIndices.push_back(vertexIndex[2]-1);
+			uvIndices.push_back(uvIndex[0]-1);
+			uvIndices.push_back(uvIndex[1]-1);
+			uvIndices.push_back(uvIndex[2]-1);
+			normalIndices.push_back(normalIndex[0]-1);
+			normalIndices.push_back(normalIndex[1]-1);
+			normalIndices.push_back(normalIndex[2]-1);
+		}
+	}
+};
+
 
 GLuint loadShaders(const char* vsPath, const char* fsPath)
 {
@@ -178,7 +253,7 @@ void renderFrame(GLfloat asd, float time, GLuint count)
 	glDrawElements(GL_TRIANGLES, count, GL_UNSIGNED_INT, 0);
 }
 
-//VBO creation
+//VBO creation			std::vector<glm::vec3>
 GLuint createVbo(GLfloat *vertices, GLint size)
 {
 	GLuint vboId;
@@ -306,9 +381,10 @@ int main()
 	//create VBO
 	GLuint vbo;
 	GLuint ebo;
+	
 	std::vector<GLuint>ebob;
 	std::vector<GLuint>vbob;
-
+	
 	int size = sizeof(vertices);
 	vbo = createVbo(&vertices[0], size);
 	vbob.push_back(vbo);
@@ -332,6 +408,52 @@ int main()
 	size = sizeof(indices3);
 	ebo = createEbo(&indices3[0], size);
 	ebob.push_back(ebo);
+	
+	//loadOBJ
+	std::vector<glm::vec3>obj_vertices;
+	std::vector<glm::vec2>obj_uvs;
+	std::vector<glm::vec3>obj_normals;
+	std::vector<unsigned int>obj_vertices_elements;
+	std::vector<unsigned int>obj_uvs_elements;
+	std::vector<unsigned int>obj_normals_elements;
+
+	bool res = loadOBJ("Data/Cube.obj", obj_vertices, obj_uvs, obj_normals, obj_vertices_elements, obj_uvs_elements, obj_normals_elements);
+
+/*	int size = sizeof(glm::vec3) * vertices.size();
+	int qweqwe = createVbo(&vertices, size);
+	size = sizeof(indices);
+	int asdasd = createEbo(indices, size);
+	
+	
+	int size = vertices.size() * sizeof(glm::vec3);
+	vbo = createVbo(&vertices, size);
+	vbob.push_back(vbo);
+	*/
+	
+	GLuint vboId;
+	glGenBuffers(1, &vboId);
+	glBindBuffer(GL_ARRAY_BUFFER, vboId);
+	glBufferData(GL_ARRAY_BUFFER, obj_vertices.size() * sizeof(glm::vec3), &obj_vertices[0], GL_STATIC_DRAW);
+	glBindBuffer(GL_ARRAY_BUFFER, 0u);
+	vbob.push_back(vboId);
+
+	glGenBuffers(1, &vboId);
+	glBindBuffer(GL_ARRAY_BUFFER, vboId);
+	glBufferData(GL_ARRAY_BUFFER, obj_uvs.size() * sizeof(glm::vec3), &obj_uvs[0], GL_STATIC_DRAW);
+	glBindBuffer(GL_ARRAY_BUFFER, 0u);
+	vbob.push_back(vboId);
+
+	GLuint eboId;
+	glGenBuffers(1, &eboId);
+	glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, eboId);
+	glBufferData(GL_ELEMENT_ARRAY_BUFFER, obj_vertices_elements.size() * sizeof(int), &obj_vertices_elements[0], GL_STATIC_DRAW);
+	glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, 0u);
+	ebob.push_back(eboId);
+	/*
+	size = sizeof(indices);
+	ebo = createEbo(&indices[0], size);
+	ebob.push_back(ebo);
+	*/
 
 	//textures
 	GLuint texture_diffuse, texture_normal;
@@ -339,7 +461,7 @@ int main()
 
 	std::vector<unsigned char> image;
 	unsigned width, height;
-	unsigned error = lodepng::decode(image, width, height, "testings.png");
+	unsigned error = lodepng::decode(image, width, height, "Data/tiles_norm.png");
 	assert(error == 0);
 
 	init2DTexture(texture_diffuse, width, height, image.data());
@@ -351,26 +473,6 @@ int main()
 
 	init2DTexture(texture_normal, width, height, image2.data());
 
-	//TEST STUFF
-	/*
-	GLuint texture2;
-	glGenTextures(1, &texture2);
-	glBindTexture(GL_TEXTURE_2D, texture2);
-
-	std::vector<unsigned char> image2;
-	unsigned width2, height2;
-	unsigned error2 = lodepng::decode(image2, width2, height2, "testings_norm.png");
-	assert(error == 0);
-
-	glEnable(GL_TEXTURE_2D);
-	glEnable(GL_BLEND);
-	glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
-
-	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
-	glTexImage2D(GL_TEXTURE_2D, 0, 4, width2, height2, 0, GL_RGBA, GL_UNSIGNED_BYTE, image2.data());
-
-	glBindTexture(GL_TEXTURE_2D, 0u);
-	*/
 	//shaders
 	GLuint programId = loadShaders("Data/VertexShader.txt", "Data/FragmentShader.txt");
 	glUseProgram(programId);
@@ -427,14 +529,12 @@ int main()
 
 	glm::mat4 normalTransform = glm::transpose(glm::inverse(viewTransform));
 	glUniformMatrix4fv(normalIndex, 1, GL_FALSE, reinterpret_cast<float*>(&normalTransform));
+	
 	*/
-
 	GLuint posAttrib = glGetAttribLocation(programId, "position");
 	GLuint colAttrib = glGetAttribLocation(programId, "color");
 	GLuint texAttrib = glGetAttribLocation(programId, "texcoord");
-
-	int posX, posY;
-
+	
 	//main message loop
 	while (!quit)
 	{
@@ -458,11 +558,17 @@ int main()
 
 		glUseProgram(programId);
 		glStencilMask(0x00);
-
+		
 		glEnableVertexAttribArray(posAttrib);
 		glEnableVertexAttribArray(colAttrib);
 		glEnableVertexAttribArray(texAttrib);
+		
+/*
+		glDrawElements(GL_TRIANGLES, 9000, GL_UNSIGNED_INT, 0);
+*/
+		//renderFrame(asd, time, 128);
 
+		
 		//stencil options
 		glEnable(GL_STENCIL_TEST);
 		glStencilFunc(GL_ALWAYS, 1, 0xFF);
@@ -473,7 +579,7 @@ int main()
 		//plane		
 		glActiveTexture(GL_TEXTURE0 + texture_diffuse);
 		glBindTexture(GL_TEXTURE_2D, texture_diffuse);
-	//	glActiveTexture(GL_TEXTURE0 + texture2);
+		//glActiveTexture(GL_TEXTURE0 + texture2);
 		//glBindTexture(GL_TEXTURE_2D, normal);
 		
 
@@ -535,7 +641,25 @@ int main()
 		glBindBuffer(GL_ARRAY_BUFFER, 0u);
 		glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, 0u);
 		
-	/*
+		//neekeri
+		worldTransform = glm::rotate(rotation, glm::vec3(0.0f, 1.0f, 0.0f)) *  glm::translate(glm::vec3(0.0f, 2.0f, 0.0f));
+		glUniformMatrix4fv(worldIndex, 1, GL_FALSE, reinterpret_cast<float*>(&worldTransform));
+		
+		glBindBuffer(GL_ARRAY_BUFFER, vbob[3]);
+		glVertexAttribPointer(posAttrib, 3, GL_FLOAT, GL_FALSE, NULL, 0);
+
+		glBindBuffer(GL_ARRAY_BUFFER, vbob[4]);
+		glVertexAttribPointer(texAttrib, 2, GL_FLOAT, GL_FALSE, NULL, 0);
+
+		glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, ebob[3]);
+		int element_size;
+		glGetBufferParameteriv(GL_ELEMENT_ARRAY_BUFFER, GL_BUFFER_SIZE, &element_size);
+		//renderFrame(asd, time, element_size); // size/sizeof(GLushort)
+		glDrawElements(GL_TRIANGLES, element_size / sizeof(GLushort), GL_UNSIGNED_INT, 0);
+		glBindBuffer(GL_ARRAY_BUFFER, 0u);
+		glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, 0u);
+
+		/*
 		//palikka1
 		worldTransform = glm::translate(glm::vec3(0.0f, 2.0f, 0.0f))  * glm::rotate(rotation, glm::vec3(1.0f, 0.0f, 1.0f));
 		glUniformMatrix4fv(worldIndex, 1, GL_FALSE, reinterpret_cast<float*>(&worldTransform));
