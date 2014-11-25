@@ -50,7 +50,19 @@ bool loadOBJ(
 		{
 			break;
 		}
+		/*
+		if (strcmp(lineHeader, "mtllib") == 0)
+		{
+			FILE *file1 = fopen("Data/" + name.c_str, "r");
+			std::string name;
+			fscanf(file1, %rrr, lineHeader);
+			if (file1 == NULL)
+			{
+				return false;
+			}
 
+		}
+		*/
 		if (strcmp(lineHeader, "v") == 0)
 		{
 			glm::vec3 vertex;
@@ -95,6 +107,15 @@ bool loadOBJ(
 			normalIndices.push_back(normalIndex[0]-1);
 			normalIndices.push_back(normalIndex[1]-1);
 			normalIndices.push_back(normalIndex[2]-1);
+
+			std::vector<unsigned int>combined_indexes;
+			combined_indexes.push_back(vertexIndex[0] - 1);
+			combined_indexes.push_back(vertexIndex[1] - 1);
+			combined_indexes.push_back(vertexIndex[2] - 1);
+			combined_indexes.push_back(uvIndex[0] - 1);
+			combined_indexes.push_back(uvIndex[1] - 1);
+			combined_indexes.push_back(uvIndex[2] - 1);
+			
 		}
 	}
 };
@@ -440,6 +461,7 @@ int main()
 	ebo = createEbo(&indices3[0], size);
 	ebob.push_back(ebo);
 	
+
 	//loadOBJ
 	std::vector<glm::vec3>obj_vertices;
 	std::vector<glm::vec2>obj_uvs;
@@ -449,11 +471,27 @@ int main()
 	std::vector<unsigned int>obj_normals_elements;
 
 	bool res = loadOBJ("Data/Cube.obj", obj_vertices, obj_uvs, obj_normals, obj_vertices_elements, obj_uvs_elements, obj_normals_elements);
-	
+
+	std::vector<double>news;
+	for (unsigned int i = 0; i < obj_vertices.size(); i++)
+	{
+		news.push_back(obj_vertices[i].x);
+		news.push_back(obj_vertices[i].y);
+		news.push_back(obj_vertices[i].z);
+		news.push_back(obj_uvs[i].x);
+		news.push_back(obj_uvs[i].y);
+	}
+
 	GLuint vboId;
 	glGenBuffers(1, &vboId);
 	glBindBuffer(GL_ARRAY_BUFFER, vboId);
 	glBufferData(GL_ARRAY_BUFFER, obj_vertices.size() * sizeof(glm::vec3), &obj_vertices[0], GL_STATIC_DRAW);
+	glBindBuffer(GL_ARRAY_BUFFER, 0u);
+	vbob.push_back(vboId);
+
+	glGenBuffers(1, &vboId);
+	glBindBuffer(GL_ARRAY_BUFFER, vboId);
+	glBufferData(GL_ARRAY_BUFFER, news.size() * sizeof(GLfloat), &news[0], GL_STATIC_DRAW);
 	glBindBuffer(GL_ARRAY_BUFFER, 0u);
 	vbob.push_back(vboId);
 
@@ -575,7 +613,7 @@ int main()
 		}
 
 		rotation++;
-
+		/*
 		POINT mouse;
 		GetCursorPos(&mouse);
 		ScreenToClient(hWnd, &mouse);
@@ -583,7 +621,7 @@ int main()
 		GLfloat mouseX, mouseY, mouseZ;
 		mouseX = (float)mouse.x;
 		mouseY = (float)mouse.y;
-		
+		*/
 		glUseProgram(programId);
 		glStencilMask(0x00);
 		
@@ -673,11 +711,17 @@ int main()
 		worldTransform = glm::rotate(rotation, glm::vec3(0.0f, 1.0f, 0.0f)) *  glm::translate(glm::vec3(0.0f, 2.0f, 0.0f));
 		glUniformMatrix4fv(worldIndex, 1, GL_FALSE, reinterpret_cast<float*>(&worldTransform));
 		
+		/*
 		glBindBuffer(GL_ARRAY_BUFFER, vbob[3]);
 		glVertexAttribPointer(posAttrib, 3, GL_FLOAT, GL_FALSE, NULL, 0);
 
 		glBindBuffer(GL_ARRAY_BUFFER, vbob[4]);
-		glVertexAttribPointer(texAttrib, 3, GL_FLOAT, GL_FALSE, NULL, 0);
+		glVertexAttribPointer(texAttrib, 2, GL_FLOAT, GL_FALSE, NULL, 0);
+		*/
+
+		glBindBuffer(GL_ARRAY_BUFFER, vbob[5]);
+		glVertexAttribPointer(posAttrib, 3, GL_FLOAT, GL_FALSE, 5 * sizeof(float), 0);
+		glVertexAttribPointer(texAttrib, 2, GL_FLOAT, GL_FALSE, 5 * sizeof(float), (void*)(3 * sizeof(float)));
 
 		glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, ebob[3]);
 		int element_size;
