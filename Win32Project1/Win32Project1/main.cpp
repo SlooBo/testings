@@ -287,6 +287,26 @@ void init2DTexture(GLint texName, GLint texWidth, GLint texHeight, GLubyte *texP
 
 LRESULT CALLBACK WndProc(HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lParam)
 {
+	/*
+	//RAWINPUT
+	//mouse
+	RAWINPUTDEVICE device[2];
+	device[0].usUsagePage = 0x01;
+	device[0].usUsage = 0x02;
+	device[0].dwFlags = RIDEV_NOLEGACY;
+	device[0].hwndTarget = hWnd;
+
+	//keyboard
+	device[1].usUsagePage = 0x01;
+	device[1].usUsage = 0x06;
+	device[1].dwFlags = RIDEV_NOLEGACY;
+	device[1].hwndTarget = hWnd;
+	
+	if (RegisterRawInputDevices(device, 2, sizeof(device[0])) == FALSE)
+	{
+		MessageBox(NULL, L"registerfail", NULL, NULL);
+	}
+	*/
 	int pixelFormat;
 	HGLRC hGlrc;
 	PIXELFORMATDESCRIPTOR pfd;
@@ -325,7 +345,18 @@ LRESULT CALLBACK WndProc(HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lParam)
 		}
 		return 0;
 
-	case WM_MOUSEMOVE:
+	case WM_INPUT:
+	{
+		char buffer[sizeof(RAWINPUT)] = {};
+		UINT size = sizeof(RAWINPUT);
+		GetRawInputData(reinterpret_cast<HRAWINPUT>(lParam), RID_INPUT, buffer, &size, sizeof(RAWINPUTHEADER));
+		
+		RAWINPUT* raw = reinterpret_cast<RAWINPUT*>(buffer);
+		if (raw->header.dwType == RIM_TYPEKEYBOARD)
+		{
+			const RAWKEYBOARD &rawKB = raw->data.keyboard;
+		}
+	}
 
 	default:
 		return DefWindowProc(hWnd, uMsg, wParam, lParam);
@@ -418,17 +449,6 @@ int main()
 	std::vector<unsigned int>obj_normals_elements;
 
 	bool res = loadOBJ("Data/Cube.obj", obj_vertices, obj_uvs, obj_normals, obj_vertices_elements, obj_uvs_elements, obj_normals_elements);
-
-/*	int size = sizeof(glm::vec3) * vertices.size();
-	int qweqwe = createVbo(&vertices, size);
-	size = sizeof(indices);
-	int asdasd = createEbo(indices, size);
-	
-	
-	int size = vertices.size() * sizeof(glm::vec3);
-	vbo = createVbo(&vertices, size);
-	vbob.push_back(vbo);
-	*/
 	
 	GLuint vboId;
 	glGenBuffers(1, &vboId);
@@ -449,6 +469,7 @@ int main()
 	glBufferData(GL_ELEMENT_ARRAY_BUFFER, obj_vertices_elements.size() * sizeof(int), &obj_vertices_elements[0], GL_STATIC_DRAW);
 	glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, 0u);
 	ebob.push_back(eboId);
+
 	/*
 	size = sizeof(indices);
 	ebo = createEbo(&indices[0], size);
@@ -461,7 +482,7 @@ int main()
 
 	std::vector<unsigned char> image;
 	unsigned width, height;
-	unsigned error = lodepng::decode(image, width, height, "Data/tiles_norm.png");
+	unsigned error = lodepng::decode(image, width, height, "Data/tiles_dif.png");
 	assert(error == 0);
 
 	init2DTexture(texture_diffuse, width, height, image.data());
@@ -555,7 +576,14 @@ int main()
 
 		rotation++;
 
-
+		POINT mouse;
+		GetCursorPos(&mouse);
+		ScreenToClient(hWnd, &mouse);
+		
+		GLfloat mouseX, mouseY, mouseZ;
+		mouseX = (float)mouse.x;
+		mouseY = (float)mouse.y;
+		
 		glUseProgram(programId);
 		glStencilMask(0x00);
 		
@@ -649,11 +677,12 @@ int main()
 		glVertexAttribPointer(posAttrib, 3, GL_FLOAT, GL_FALSE, NULL, 0);
 
 		glBindBuffer(GL_ARRAY_BUFFER, vbob[4]);
-		glVertexAttribPointer(texAttrib, 2, GL_FLOAT, GL_FALSE, NULL, 0);
+		glVertexAttribPointer(texAttrib, 3, GL_FLOAT, GL_FALSE, NULL, 0);
 
 		glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, ebob[3]);
 		int element_size;
 		glGetBufferParameteriv(GL_ELEMENT_ARRAY_BUFFER, GL_BUFFER_SIZE, &element_size);
+
 		//renderFrame(asd, time, element_size); // size/sizeof(GLushort)
 		glDrawElements(GL_TRIANGLES, element_size / sizeof(GLushort), GL_UNSIGNED_INT, 0);
 		glBindBuffer(GL_ARRAY_BUFFER, 0u);
@@ -679,7 +708,7 @@ int main()
 		//palikka 2
 		worldTransform = glm::translate(glm::vec3(1.0, 2.0f, 0.0f))  * glm::rotate(rotation, glm::vec3(1.0f, 0.0f, 1.0f));
 		glUniformMatrix4fv(worldIndex, 1, GL_FALSE, reinterpret_cast<float*>(&worldTransform));
-
+		
 		glBindBuffer(GL_ARRAY_BUFFER, vbob[0]);
 		glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, ebob[0]);
 
