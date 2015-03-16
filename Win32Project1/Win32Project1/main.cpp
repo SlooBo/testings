@@ -19,6 +19,8 @@
 
 #include "Sprite.h"
 
+#include "GameObject.h"
+
 using namespace std;
 
 HDC hDc;
